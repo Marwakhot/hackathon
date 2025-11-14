@@ -63,11 +63,13 @@ function LearningInterface() {
   const state = location.state as {
     pdfContent?: string
     pdfFileName?: string
+    pdfFileData?: string // Base64 PDF data for display
     analysisResult?: { topics: string[]; concepts: string[] }
   } | null
 
   const pdfContent = state?.pdfContent || ''
   const pdfFileName = state?.pdfFileName || 'Lecture Slides'
+  const pdfFileData = state?.pdfFileData || ''
   const topics = state?.analysisResult?.topics || []
 
   // State management
@@ -78,7 +80,7 @@ function LearningInterface() {
   const [conversationHistory, setConversationHistory] = useState<ConversationMessage[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showHintButton, setShowHintButton] = useState(false)
-  const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(2)
+  const [currentDifficulty, setCurrentDifficulty] = useState<DifficultyLevel>(1)
   const [recentQualities, setRecentQualities] = useState<QualityLevel[]>([])
   const [messages, setMessages] = useState<Message[]>([])
   const [userAnswer, setUserAnswer] = useState('')
@@ -376,7 +378,7 @@ function LearningInterface() {
       setCurrentAttempts(0)
       setHintsUsed(0)
       setShowHintButton(false)
-      setCurrentDifficulty(2)
+      setCurrentDifficulty(1)
       setRecentQualities([])
       setUserAnswer('')
       setError(null)
@@ -676,88 +678,56 @@ function LearningInterface() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="w-80 bg-white border-l border-gray-200 p-6 overflow-y-auto">
-          {/* Current Difficulty */}
-          <div className="mb-8">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-              Current Difficulty
-            </h2>
-            <div className="space-y-2">
-              <div
-                className="px-4 py-3 rounded-lg text-white font-semibold text-center"
-                style={{ backgroundColor: difficultyInfo.color }}
-              >
-                Level {currentDifficulty}/4
+        <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+          {/* PDF Viewer */}
+          {pdfFileData ? (
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                <h2 className="text-sm font-semibold text-gray-700">{pdfFileName}</h2>
               </div>
-              <p className="text-sm text-gray-600 text-center">{difficultyInfo.name}</p>
+              <div className="flex-1 overflow-auto p-2">
+                <iframe
+                  src={`data:application/pdf;base64,${pdfFileData}`}
+                  className="w-full h-full min-h-[600px] border border-gray-200 rounded"
+                  title="PDF Viewer"
+                />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center p-6">
+              <p className="text-sm text-gray-500 text-center">PDF not available</p>
+            </div>
+          )}
 
-          {/* Performance Tracker */}
-          <div className="mb-8">
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-              Performance
-            </h2>
-            <div className="flex space-x-2">
-              {recentQualities.length === 0 ? (
-                <p className="text-sm text-gray-500">No responses yet</p>
-              ) : (
-                <>
-                  {[...Array(3)].map((_, index) => {
-                    const quality = recentQualities[index]
-                    return (
+          {/* Simple Info Section */}
+          <div className="border-t border-gray-200 p-4 bg-gray-50">
+            <div className="space-y-3">
+              <div>
+                <div
+                  className="px-3 py-2 rounded-lg text-white font-semibold text-center text-sm"
+                  style={{ backgroundColor: difficultyInfo.color }}
+                >
+                  Level {currentDifficulty} - {difficultyInfo.name}
+                </div>
+              </div>
+              {recentQualities.length > 0 && (
+                <div>
+                  <p className="text-xs text-gray-600 mb-2">Recent:</p>
+                  <div className="flex space-x-2">
+                    {recentQualities.map((quality, index) => (
                       <div
                         key={index}
-                        className={`flex-1 aspect-square rounded-lg flex items-center justify-center text-2xl font-bold ${getPerformanceColor(
+                        className={`flex-1 aspect-square rounded flex items-center justify-center text-lg font-bold ${getPerformanceColor(
                           quality
                         )}`}
                       >
                         {getPerformanceIcon(quality)}
                       </div>
-                    )
-                  })}
-                </>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-            <p className="text-xs text-gray-500 mt-2">Last 3 responses</p>
-            <p className="text-xs text-gray-400 mt-1">
-              ✓ Strong | ~ Partial | ✗ Needs Work
-            </p>
-          </div>
-
-          {/* Topics Covered */}
-          <div>
-            <h2 className="text-sm font-semibold text-gray-700 uppercase tracking-wide mb-3">
-              Topics Covered
-            </h2>
-            {topics.length === 0 ? (
-              <p className="text-sm text-gray-500">No topics available</p>
-            ) : (
-              <ul className="space-y-2">
-                {topics.map((topic, index) => {
-                  const isExplored = exploredTopics.has(topic)
-                  return (
-                    <li
-                      key={index}
-                      className={`text-sm px-3 py-2 rounded-lg transition-all ${
-                        isExplored
-                          ? 'bg-green-50 text-green-800 border border-green-200'
-                          : 'bg-gray-50 text-gray-700'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>{topic}</span>
-                        {isExplored && (
-                          <span className="text-green-600 font-bold" title="Explored">
-                            ✓
-                          </span>
-                        )}
-                      </div>
-                    </li>
-                  )
-                })}
-              </ul>
-            )}
           </div>
         </div>
       </div>

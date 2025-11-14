@@ -9,6 +9,7 @@ function PDFUpload() {
   const [file, setFile] = useState<File | null>(null)
   const [pdfContent, setPdfContent] = useState<string | null>(null)
   const [pdfFileName, setPdfFileName] = useState<string>('')
+  const [pdfFileData, setPdfFileData] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [analysisResult, setAnalysisResult] = useState<PDFAnalysisResult | null>(null)
@@ -76,6 +77,23 @@ function PDFUpload() {
     fileInputRef.current?.click()
   }
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          // Remove data URL prefix (data:application/pdf;base64,)
+          const base64 = reader.result.split(',')[1]
+          resolve(base64)
+        } else {
+          reject(new Error('Failed to convert file to base64'))
+        }
+      }
+      reader.onerror = () => reject(new Error('Error reading file'))
+      reader.readAsDataURL(file)
+    })
+  }
+
   const handleProcessPDF = async () => {
     if (!file) return
     
@@ -84,6 +102,9 @@ function PDFUpload() {
     setAnalysisResult(null)
     
     try {
+      // Convert PDF to base64 for display
+      const pdfBase64 = await fileToBase64(file)
+      
       // Step 1: Process PDF and extract text
       const extractedText = await processPDF(file)
       setPdfContent(extractedText)
@@ -91,23 +112,27 @@ function PDFUpload() {
       // Step 2: Analyze the content
       const analysis = await analyzePDFContent(extractedText)
       setAnalysisResult(analysis)
+      
+      // Store base64 for PDF display
+      setPdfFileData(pdfBase64)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to process PDF. Please try again.'
       setError(errorMessage)
       setPdfContent(null)
       setAnalysisResult(null)
+      setPdfFileData(null)
     } finally {
       setIsProcessing(false)
     }
   }
 
   const handleStartLearning = () => {
-    if (pdfContent && analysisResult) {
-      // Navigate to learning interface with data
-      // We'll create the learning interface next, so for now we'll prepare the navigation
+    if (pdfContent && analysisResult && pdfFileData) {
+      // Navigate to learning interface with data including PDF file for display
       navigate('/learn', {
         state: {
           pdfContent,
+          pdfFileData,
           analysisResult,
           pdfFileName,
         },
@@ -120,6 +145,7 @@ function PDFUpload() {
     setFile(null)
     setPdfContent(null)
     setAnalysisResult(null)
+    setPdfFileData(null)
     setPdfFileName('')
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
