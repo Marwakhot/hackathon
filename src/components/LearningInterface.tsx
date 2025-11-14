@@ -88,6 +88,34 @@ function LearningInterface() {
   const [difficultyChanged, setDifficultyChanged] = useState(false)
   const [exploredTopics, setExploredTopics] = useState<Set<string>>(new Set())
   const [lastErrorAction, setLastErrorAction] = useState<(() => Promise<void>) | null>(null)
+  const [pdfBlobUrl, setPdfBlobUrl] = useState<string | null>(null)
+
+  // Convert base64 PDF data to blob URL for display
+  useEffect(() => {
+    if (pdfFileData) {
+      try {
+        // Convert base64 to binary
+        const binaryString = atob(pdfFileData)
+        const bytes = new Uint8Array(binaryString.length)
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i)
+        }
+        const blob = new Blob([bytes], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        setPdfBlobUrl(url)
+
+        // Cleanup function
+        return () => {
+          URL.revokeObjectURL(url)
+        }
+      } catch (error) {
+        console.error('Error creating blob URL from PDF data:', error)
+        setPdfBlobUrl(null)
+      }
+    } else {
+      setPdfBlobUrl(null)
+    }
+  }, [pdfFileData])
 
   // Generate first question on mount
   useEffect(() => {
@@ -680,18 +708,22 @@ function LearningInterface() {
         {/* Right Sidebar */}
         <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
           {/* PDF Viewer */}
-          {pdfFileData ? (
+          {pdfBlobUrl ? (
             <div className="flex-1 overflow-hidden flex flex-col">
               <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
                 <h2 className="text-sm font-semibold text-gray-700">{pdfFileName}</h2>
               </div>
               <div className="flex-1 overflow-auto p-2">
                 <iframe
-                  src={`data:application/pdf;base64,${pdfFileData}`}
+                  src={pdfBlobUrl}
                   className="w-full h-full min-h-[600px] border border-gray-200 rounded"
                   title="PDF Viewer"
                 />
               </div>
+            </div>
+          ) : pdfFileData ? (
+            <div className="flex-1 flex items-center justify-center p-6">
+              <p className="text-sm text-gray-500 text-center">Loading PDF...</p>
             </div>
           ) : (
             <div className="flex-1 flex items-center justify-center p-6">
