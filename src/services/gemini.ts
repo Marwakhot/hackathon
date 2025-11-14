@@ -23,6 +23,17 @@ const getGeminiClient = (): GoogleGenerativeAI => {
   return new GoogleGenerativeAI(apiKey)
 }
 
+// Helper function to get the correct model name based on API key type
+// For standard (non-Pro) API keys, use gemini-2.5-flash (recommended as of Nov 2024)
+// Alternative models to try if this doesn't work:
+// - gemini-1.5-flash (older, may be deprecated)
+// - gemini-1.5-pro (may require Pro API key)
+// - gemini-pro (legacy model)
+const getModelName = (): string => {
+  // Use gemini-2.5-flash for standard API keys (most current and widely available)
+  return 'gemini-2.5-flash'
+}
+
 // Convert File to base64 string
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -64,8 +75,8 @@ export async function processPDF(file: File): Promise<string> {
 
     // Initialize Gemini client
     const genAI = getGeminiClient()
-    // Use gemini-pro (most widely available model)
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    // Use model name based on API key type
+    const model = genAI.getGenerativeModel({ model: getModelName() })
 
     // Prepare the PDF data for Gemini
     const pdfPart = {
@@ -115,8 +126,8 @@ export async function analyzePDFContent(pdfText: string): Promise<PDFAnalysisRes
 
     // Initialize Gemini client
     const genAI = getGeminiClient()
-    // Use gemini-pro (most widely available model)
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    // Use model name based on API key type
+    const model = genAI.getGenerativeModel({ model: getModelName() })
 
     // Create prompt for analysis
     const prompt = `Analyze the following text content from a lecture PDF and identify:
@@ -195,8 +206,8 @@ export async function generateSocraticQuestion(
 
     // Initialize Gemini client
     const genAI = getGeminiClient()
-    // Use gemini-pro (most widely available model)
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    // Use model name based on API key type
+    const model = genAI.getGenerativeModel({ model: getModelName() })
 
     // Get first 4000 characters of PDF content for context
     const pdfContext = pdfContent.substring(0, 4000)
@@ -332,8 +343,8 @@ export async function evaluateResponse(
 
     // Initialize Gemini client
     const genAI = getGeminiClient()
-    // Use gemini-pro (most widely available model)
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    // Use model name based on API key type
+    const model = genAI.getGenerativeModel({ model: getModelName() })
 
     // Get first 4000 characters of PDF content for context
     const pdfContext = pdfContent.substring(0, 4000)
@@ -489,8 +500,8 @@ export async function generateExplanation(
 
     // Initialize Gemini client
     const genAI = getGeminiClient()
-    // Use gemini-pro (most widely available model)
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    // Use model name based on API key type
+    const model = genAI.getGenerativeModel({ model: getModelName() })
 
     // Get first 4000 characters of PDF content for context
     const pdfContext = pdfContent.substring(0, 4000)
@@ -618,8 +629,8 @@ export async function generateHint(
 
     // Initialize Gemini client
     const genAI = getGeminiClient()
-    // Use gemini-pro (most widely available model)
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    // Use model name based on API key type
+    const model = genAI.getGenerativeModel({ model: getModelName() })
 
     // Get first 4000 characters of PDF content for context
     const pdfContext = pdfContent.substring(0, 4000)
