@@ -252,26 +252,28 @@ export async function generateSocraticQuestion(
 CRITICAL RULES:
 1. You MUST ONLY ask questions - NEVER provide explanations, answers, or hints
 2. Use ONLY the Socratic method: guide the student to discover answers through thoughtful questioning
-3. Base your question STRICTLY on the provided PDF content
+3. Base your question STRICTLY on the provided lecture material
 4. Difficulty Level ${difficultyLevel}: ${difficultyInfo.instruction}
 5. Question style: ${difficultyInfo.style} (examples: ${difficultyInfo.examples})
 6. Build progressively on previous questions in the conversation
 7. Do NOT repeat questions that have already been asked
-8. Reference specific concepts, examples, or sections from the PDF content
+8. Reference specific concepts or examples from the lecture material naturally in your questions
 9. Make the question thought-provoking and encourage deeper thinking
-${currentTopic ? `10. Focus on the topic: "${currentTopic}"` : ''}
+10. NEVER ask the student to check, look at, or reference any external material - focus only on what they can recall and think about
+${currentTopic ? `11. Focus on the topic: "${currentTopic}"` : ''}
 
 ${historyText ? `Previous conversation:\n${historyText}\n\n` : ''}
 
-PDF Content (first 4000 characters):
+Lecture Material (first 4000 characters):
 ${pdfContext}
 
 Now generate a single Socratic question that:
 - Follows difficulty level ${difficultyLevel} requirements
-- References the PDF content
+- Is based on the lecture material
 - Builds on the conversation history (if any)
 - Encourages the student to think deeply
 - Is appropriate for the current learning stage
+- Does NOT ask the student to check or reference any external material
 
 Return ONLY the question text, nothing else. No explanations, no prefixes, just the question.`
 
@@ -366,7 +368,7 @@ CRITICAL RULES:
 1. You MUST NOT provide explanations or answers - only evaluation and feedback
 2. Evaluate based on:
    - Logical reasoning: Does the answer show logical thinking?
-   - Connection to lecture material: Does it reference concepts from the PDF?
+   - Connection to lecture material: Does it reference concepts from the lecture?
    - Depth of understanding: Does it demonstrate understanding appropriate for difficulty level ${difficultyLevel}?
    - Correctness of concepts: Are the concepts mentioned accurate?
 
@@ -378,17 +380,18 @@ CRITICAL RULES:
 4. Feedback format:
    - If "strong": Start with "Great thinking!" or similar positive reinforcement, then provide a gentle transition like "Let me explain this concept..." (but DO NOT actually explain - just indicate readiness for explanation)
    - If "partial": Start with "You're on the right track." then ask a follow-up question to guide them, like "Can you elaborate on [specific part]?" or "What do you think about [related aspect]?"
-   - If "needs_work": Start with "Let's think about this differently." then provide a guiding question that helps redirect their thinking, like "What if we consider [alternative perspective]?" or "How does [concept from PDF] relate to this?"
+   - If "needs_work": Start with "Let's think about this differently." then provide a guiding question that helps redirect their thinking, like "What if we consider [alternative perspective]?" or "How does [concept from the lecture] relate to this?"
 
 5. Your feedback should be:
    - Encouraging and supportive
    - A question or gentle nudge (NOT an explanation)
    - Specific to what they said
    - Appropriate for difficulty level ${difficultyLevel}
+   - NEVER ask the student to check, look at, or reference any external material
 
 Difficulty Level ${difficultyLevel} Expectations: ${expectation}
 
-PDF Content (first 4000 characters):
+Lecture Material (first 4000 characters):
 ${pdfContext}
 
 Question asked: ${question}
@@ -538,15 +541,16 @@ export async function generateExplanation(
 CRITICAL REQUIREMENTS:
 1. Confirm the user's understanding by acknowledging what they got right
 2. Expand on the concept properly with additional context
-3. Reference specific concepts, examples, or sections from the lecture material (PDF content)
+3. Reference specific concepts or examples from the lecture material naturally
 4. Match the difficulty level ${difficultyLevel} style: ${styleInfo.instruction}
 5. Keep the explanation ${styleInfo.length} long (concise but complete)
 6. End with encouragement: "Ready for the next question?"
 7. Use ${styleInfo.style} language appropriate for difficulty level ${difficultyLevel}
+8. NEVER ask the student to check, look at, or reference any external material
 
 Difficulty Level ${difficultyLevel} Style: ${styleInfo.style}
 
-PDF Content (first 4000 characters):
+Lecture Material (first 4000 characters):
 ${pdfContext}
 
 Question asked: ${question}
@@ -556,10 +560,11 @@ Student's answer (which demonstrated good understanding): ${userAnswer}
 Generate a clear, concise explanation that:
 - Confirms the student's understanding
 - Expands on the concept with proper context
-- References the lecture material
+- References the lecture material naturally
 - Matches difficulty level ${difficultyLevel} complexity
 - Is ${styleInfo.length} long
 - Ends with "Ready for the next question?"
+- Does NOT ask the student to check or reference any external material
 
 Return ONLY the explanation text, nothing else.`
 
@@ -670,10 +675,11 @@ CRITICAL RULES:
 5. Phrase the hint as one of these styles:
    - Questions: "What about X?" or "How does Y relate to Z?"
    - Suggestions: "Consider thinking about Y..." or "Focus on the relationship between A and B..."
-   - References: "Look back at the part about Z in the lecture..." or "The section discussing C mentions..."
-6. Base the hint on the PDF content and reference specific concepts when appropriate
+   - References: "Remember the concept about Z..." or "Think about how C relates to this..."
+6. Base the hint on the lecture material and reference specific concepts when appropriate
 7. Adjust the hint complexity to match difficulty level ${difficultyLevel}
 8. The hint should build on what the student has already attempted (their current answer)
+9. NEVER ask the student to check, look at, or reference any external material - guide them to think about what they know
 
 Hint ${hintNumber} Requirements: ${hintInfo.instruction}
 
@@ -681,7 +687,7 @@ Examples of appropriate phrasing: ${hintInfo.examples}
 
 Difficulty Level: ${difficultyLevel}
 
-PDF Content (first 4000 characters):
+Lecture Material (first 4000 characters):
 ${pdfContext}
 
 Question asked: ${question}
@@ -695,6 +701,7 @@ Generate Hint ${hintNumber} that:
 - References the lecture material when helpful
 - Matches difficulty level ${difficultyLevel}
 - Helps the student think in the right direction
+- Does NOT ask the student to check or reference any external material
 
 Return ONLY the hint text, nothing else. No prefixes, no explanations, just the hint.`
 
@@ -734,4 +741,3 @@ Return ONLY the hint text, nothing else. No prefixes, no explanations, just the 
     throw new Error('Failed to generate hint: Unknown error occurred')
   }
 }
-
